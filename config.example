@@ -1,3 +1,5 @@
 FBF="https://<IP>:<PORT>"
 USER=""
 PASS=""
+SOURCE_IP="" # fake ip address from your fritzbox
+TARGET_IP="" # target ip address to netflow collector
