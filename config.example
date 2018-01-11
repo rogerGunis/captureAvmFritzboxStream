@@ -3,3 +3,4 @@ USER=""
 PASS=""
 SOURCE_IP="" # fake ip address from your fritzbox
 TARGET_IP="" # target ip address to netflow collector
+TSHARK_FILTER="" # additional filter to tshark command

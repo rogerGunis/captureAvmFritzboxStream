@@ -121,7 +121,7 @@ while true; do
     fi
 done
 
-# $WGET -O- $FBF/cgi-bin/capture_notimeout?ifaceorminor=$IFACE\&snaplen=\&capture=Start\&sid=$SID | /usr/bin/tshark -r -
-$WGET -O$TRAFFIC_PIPE $FBF/cgi-bin/capture_notimeout?ifaceorminor=1-lan\&snaplen=\&capture=Start\&sid=$SID &
+$WGET -O- $FBF/cgi-bin/capture_notimeout?ifaceorminor=$IFACE\&snaplen=\&capture=Start\&sid=$SID | /usr/bin/tshark -r - $TSHARK_FILTER 
 
+# $WGET -O$TRAFFIC_PIPE $FBF/cgi-bin/capture_notimeout?ifaceorminor=1-lan\&snaplen=\&capture=Start\&sid=$SID &
 # sudo nprobe -V 10 -i /tmp/traffic.cap -q ${SOURCE_IP}:9995 -a -n ${TARGET_IP}:9995 -w 2097152 -t 60 -Q 0 -u 0 -E 1:3 -p 1/1/1/1/1/1 -O 1 -g /tmp/nprobe.traffic.pid -b 2 --debug
