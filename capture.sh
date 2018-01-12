@@ -16,6 +16,10 @@ TRAFFIC_PIPE="/tmp/traffic.cap"
 source config
 
 rm -f $TRAFFIC_PIPE
+if [ $? != 0 ];then
+   echo "pipe $TRAFFIC_PIPE not removeable"
+   exit 1;
+fi
 
 if [ ! -p $TRAFFIC_PIPE ];then
   mkfifo $TRAFFIC_PIPE
@@ -32,7 +36,7 @@ function get_session_id() {
 
 	if [ -z $CHALLENGE ];then
 		echo "Challange not found"
-		exit;
+		exit 1;
 	fi
 
 # -----
@@ -59,30 +63,36 @@ if [ -z "$SID" -o "$SID" == "0000000000000000" ]; then
     exit
 fi
 
-echo ""
-echo "What do you want to capture?"
-echo "INTERNET:"
-echo "   1) Internet"
-echo "   2) Interface 0"
-echo "   3) Routing Interface"
-echo "INTERFACES:"
-echo "   4) tunl0"
-echo "   5) eth0"
-echo "   6) eth1"
-echo "   7) eth2"
-echo "   8) eth3"
-echo "   9) lan"
-echo "  10) hotspot"
-echo "  11) wifi0"
-echo "  12) ath0"
-echo "WIFI:"
-echo "  13) AP 2.4 + 5 GHz wifi1"
-echo "  14) AP 2.4 + 5 GHz wifi0"
-echo "  15) WLAN Management Traffic"
-echo ""
+MODE=${1:-}
+IFACE=""
+if [ -z "$MODE" ];then
+	echo ""
+	echo "What do you want to capture?"
+	echo "INTERNET:"
+	echo "   1) Internet"
+	echo "   2) Interface 0"
+	echo "   3) Routing Interface"
+	echo "INTERFACES:"
+	echo "   4) tunl0"
+	echo "   5) eth0"
+	echo "   6) eth1"
+	echo "   7) eth2"
+	echo "   8) eth3"
+	echo "   9) lan"
+	echo "  10) hotspot"
+	echo "  11) wifi0"
+	echo "  12) ath0"
+	echo "WIFI:"
+	echo "  13) AP 2.4 + 5 GHz wifi1"
+	echo "  14) AP 2.4 + 5 GHz wifi0"
+	echo "  15) WLAN Management Traffic"
+	echo ""
+fi
 
 while true; do 
+if [ -z "$MODE" ];then
     echo -n "Enter your choice [0-15] ('q' for quit): "; read MODE;
+fi
     if (("$MODE" > "0")) && (("$MODE" < "16")); then
         if [ "$MODE" == "1" ]; then
             IFACE="2-1"
@@ -121,7 +131,12 @@ while true; do
     fi
 done
 
-$WGET -O- $FBF/cgi-bin/capture_notimeout?ifaceorminor=$IFACE\&snaplen=\&capture=Start\&sid=$SID | /usr/bin/tshark -r - $TSHARK_FILTER 
+if [ -z "${IFACE}" ];then
+	echo "No interface selected"
+	exit 1;
+fi
 
-# $WGET -O$TRAFFIC_PIPE $FBF/cgi-bin/capture_notimeout?ifaceorminor=$IFACE\&snaplen=\&capture=Start\&sid=$SID &
-# sudo nprobe -V 10 -i /tmp/traffic.cap -q ${SOURCE_IP}:9995 -a -n ${TARGET_IP}:9995 -w 2097152 -t 60 -Q 0 -u 0 -E 1:3 -p 1/1/1/1/1/1 -O 1 -g /tmp/nprobe.traffic.pid -b 2 --debug
+# $WGET -O- $FBF/cgi-bin/capture_notimeout?ifaceorminor=$IFACE\&snaplen=\&capture=Start\&sid=$SID | /usr/bin/tshark -r - $TSHARK_FILTER 
+
+$WGET -O$TRAFFIC_PIPE $FBF/cgi-bin/capture_notimeout?ifaceorminor=${IFACE}\&snaplen=\&capture=Start\&sid=$SID &
+sudo nprobe -V 10 -i /tmp/traffic.cap -q ${SOURCE_IP}:9995 -a -n ${TARGET_IP}:9995 -w 2097152 -t 60 -Q 0 -u 0 -E 1:3 -p 1/1/1/1/1/1 -O 1 -g /tmp/nprobe.traffic.pid -b 2 # --debug
