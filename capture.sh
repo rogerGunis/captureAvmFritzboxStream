@@ -26,7 +26,7 @@ if [ ! -p $TRAFFIC_PIPE ];then
 fi
 
 CURL="curl -k -s"
-WGET="wget --no-check-certificate -q"
+WGET="wget --no-check-certificate -q -t 0 --timeout=60 --waitretry=300"
 
 # ---------------
 # fetch challenge
@@ -139,4 +139,4 @@ fi
 # $WGET -O- $FBF/cgi-bin/capture_notimeout?ifaceorminor=$IFACE\&snaplen=\&capture=Start\&sid=$SID | /usr/bin/tshark -r - $TSHARK_FILTER 
 
 $WGET -O$TRAFFIC_PIPE $FBF/cgi-bin/capture_notimeout?ifaceorminor=${IFACE}\&snaplen=\&capture=Start\&sid=$SID &
-sudo nprobe -V 10 -i /tmp/traffic.cap -q ${SOURCE_IP}:9995 -a -n ${TARGET_IP}:9995 -w 2097152 -t 60 -Q 0 -u 0 -E 1:3 -p 1/1/1/1/1/1 -O 1 -g /tmp/nprobe.traffic.pid -b 2 # --debug
+sudo nprobe --as-list /usr/share/GeoIP/GeoIPASNum.dat --city-list /usr/share/GeoIP/GeoIPCity.dat  -V 10 -i /tmp/traffic.cap -q ${SOURCE_IP}:9995 -a -n ${TARGET_IP}:9995 -w 2097152 -t 60 -Q 0 -u 0 -E 1:3 -p 1/1/1/1/1/1 -O 1 -g /tmp/nprobe.traffic.pid -b 2 # --debug
